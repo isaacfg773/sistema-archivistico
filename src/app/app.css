@@ -1,0 +1,494 @@
+/* =========================
+   ESTILOS GENERALES
+========================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #0f172a;
+}
+
+/* Contenedor raíz de la app */
+.app-root {
+  min-height: 100vh;
+}
+
+/* =========================
+   LOGIN
+========================= */
+
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at top left, #38bdf8, #0f172a);
+  padding: 16px;
+}
+
+.login-card {
+  width: 380px;
+  max-width: 100%;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px 24px 20px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-card::before {
+  content: "";
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.15);
+  top: -60px;
+  right: -60px;
+}
+
+.login-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.logo-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #0ea5e9, #22c55e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f9fafb;
+  font-weight: 700;
+  font-size: 22px;
+  box-shadow: 0 10px 18px rgba(34, 197, 94, 0.5);
+}
+
+.login-header h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.login-header p {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+  letter-spacing: 0.08em;
+}
+
+.login-form {
+  position: relative;
+  z-index: 1;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5563;
+  margin-bottom: 4px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  padding: 8px 10px;
+  font-size: 13px;
+  outline: none;
+  background: #f9fafb;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.25);
+  background: #ffffff;
+}
+
+.login-msg {
+  margin-top: 10px;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  text-align: center;
+}
+
+.login-msg.error {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* =========================
+   BOTONES GENERALES
+========================= */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  transition: filter 0.15s ease, transform 0.05s ease;
+}
+
+.btn:hover {
+  filter: brightness(1.05);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #0ea5e9, #0369a1);
+  color: #f9fafb;
+  box-shadow: 0 10px 18px rgba(14, 165, 233, 0.35);
+  width: 100%;
+}
+
+.btn-secondary {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.btn-outline {
+  border: 1px solid #e5e7eb;
+  background: rgba(15, 23, 42, 0.1);
+  color: #f9fafb;
+  padding-inline: 14px;
+}
+
+/* Botones tipo link en tablas */
+.btn-link {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 13px;
+  color: #0ea5e9;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.btn-link.danger {
+  color: #dc2626;
+}
+
+/* =========================
+   TOPBAR Y LAYOUT
+========================= */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #0ea5e9, #0f766e);
+  color: #e5e7eb;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.topbar-text .title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.topbar-text .subtitle {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.layout {
+  display: flex;
+  min-height: calc(100vh - 52px);
+}
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar {
+  width: 230px;
+  background: #020617;
+  color: #e5e7eb;
+  padding: 16px 12px;
+}
+
+.sidebar h3 {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin: 0 0 10px 6px;
+}
+
+.sidebar-item {
+  width: 100%;
+  text-align: left;
+  padding: 9px 12px;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  background: transparent;
+  color: #e5e7eb;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-item:hover {
+  background: #111827;
+}
+
+.sidebar-item.active {
+  background: #0ea5e9;
+  color: #f9fafb;
+}
+
+/* =========================
+   CONTENIDO PRINCIPAL
+========================= */
+
+.content {
+  flex: 1;
+  padding: 20px 24px 30px;
+  background: #f3f4f6;
+  overflow-y: auto;
+}
+
+.content h2 {
+  margin-top: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+.section-subtitle {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 0;
+  margin-bottom: 14px;
+}
+
+/* =========================
+   FORMULARIOS (REGISTRO)
+========================= */
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px 16px;
+  background: #ffffff;
+  padding: 14px 16px 12px;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+}
+
+.grid-2 .full {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.help {
+  display: block;
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.help code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  background: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+/* Mensajes informativos */
+.info-msg {
+  margin-top: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+/* =========================
+   TABLAS
+========================= */
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 6px;
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+  font-size: 13px;
+}
+
+.data-table thead {
+  background: #f3f4f6;
+}
+
+.data-table th,
+.data-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.data-table th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+}
+
+.data-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+/* =========================
+   BUSCADORES
+========================= */
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.search-bar input {
+  flex: 1;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  padding: 8px 12px;
+  font-size: 13px;
+  outline: none;
+  background: #f9fafb;
+}
+
+.search-bar input:focus {
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.25);
+}
+
+/* Voz */
+.voice-info {
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.voice-controls .help {
+  margin-top: 4px;
+}
+
+/* =========================
+   VISOR DE DOCUMENTOS
+========================= */
+
+.viewer {
+  margin-top: 16px;
+}
+
+.viewer h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.viewer iframe {
+  border-radius: 16px;
+  border: none;
+  background: #020617;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.24);
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+  }
+
+  .sidebar h3 {
+    display: none;
+  }
+
+  .sidebar-item {
+    white-space: nowrap;
+    margin-right: 6px;
+    margin-bottom: 0;
+  }
+
+  .content {
+    padding: 16px;
+  }
+
+  .viewer iframe {
+    height: 420px;
+  }
+}
