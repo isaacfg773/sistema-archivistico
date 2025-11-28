@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { ApiService } from './api';
+import { ApiService, BackendDocument } from './api';
 
 interface Documento {
   id: number;
@@ -10,7 +10,7 @@ interface Documento {
   titulo: string;
   descripcion: string;
   categoria: string;
-  url: string;      // lo que escribes en el formulario
+  url: string;      // URL que se usará para el visor
   fileId?: string;  // ID de Drive si el enlace es de Google Drive
 }
 
@@ -32,7 +32,7 @@ export class App {
   // ========= MENÚ LATERAL =========
   selectedModule: 'registro' | 'tabla' | 'texto' | 'voz' = 'registro';
 
-  // ========= REGISTRO DE DOCUMENTOS =========
+  // ========= REGISTRO / TABLA =========
   documentos: Documento[] = [];
   nextId = 1;
 
@@ -42,6 +42,9 @@ export class App {
   formCategoria = '';
   formUrl = '';
   registroMsg = '';
+
+  // Mensaje específico para la tabla (cargando / vacío / error)
+  tablaMsg = '';
 
   // ========= BÚSQUEDA POR TEXTO =========
   searchText = '';
@@ -68,18 +71,32 @@ export class App {
     this.loginMsg = 'Verificando...';
     this.loginError = false;
 
+    // 🔹 LOGIN LOCAL principal
+    if (this.loginUser === 'admin' && this.loginPass === '1234') {
+      this.loggedIn = true;
+      this.loginMsg = '';
+      this.loginError = false;
+
+      // Al entrar, intentamos cargar la tabla desde Apps Script
+      this.cargarDesdeBackend();
+      return;
+    }
+
+    // 🔹 Opcional: login contra Apps Script para otros usuarios
     this.api.login(this.loginUser, this.loginPass).subscribe({
       next: (resp: { ok: boolean }) => {
         if (resp.ok) {
           this.loggedIn = true;
           this.loginMsg = '';
+          this.cargarDesdeBackend();
         } else {
           this.loginMsg = 'Usuario o contraseña incorrectos.';
           this.loginError = true;
         }
       },
-      error: () => {
-        this.loginMsg = 'Error de login.';
+      error: (err) => {
+        console.error('Error en login backend', err);
+        this.loginMsg = 'Error de login en el servidor (Apps Script).';
         this.loginError = true;
       },
     });
@@ -95,17 +112,21 @@ export class App {
     // Limpiar visor
     this.selectedDocumentUrl = null;
     this.selectedDocumentTitle = '';
+    this.documentos = [];
+    this.resultadosTexto = [];
+    this.resultadosVoz = [];
+    this.tablaMsg = '';
   }
 
   // ---------- UTILIDAD: sacar fileId de enlace de Drive ----------
   private extraerFileId(desdeUrl: string): string | null {
     if (!desdeUrl) return null;
 
-    // Formato: https://drive.google.com/file/d/ID/...
+    // https://drive.google.com/file/d/ID/...
     let m = desdeUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
     if (m && m[1]) return m[1];
 
-    // Formato: ...?id=ID
+    // ...?id=ID
     m = desdeUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
     if (m && m[1]) return m[1];
 
@@ -119,35 +140,95 @@ export class App {
       return;
     }
 
-    const urlLimpia = this.formUrl.trim();
-    const fileId = this.extraerFileId(urlLimpia);
-
-    const doc: Documento = {
-      id: this.nextId++,
+    const payload = {
       codigo: this.formCodigo.trim(),
       titulo: this.formTitulo.trim(),
       descripcion: this.formDescripcion.trim(),
       categoria: this.formCategoria.trim(),
-      url: urlLimpia,
-      fileId: fileId || undefined,
+      enlace: this.formUrl.trim(),   // enlace de Google Drive o PDF
     };
 
-    this.documentos.push(doc);
-    this.registroMsg = fileId
-      ? 'Documento registrado. Se detectó ID de Drive correctamente.'
-      : 'Documento registrado. (No parece ser un enlace de Drive, se usará la URL tal cual).';
+    this.registroMsg = 'Guardando en el sistema...';
 
-    // Limpiar formulario
-    this.formCodigo = '';
-    this.formTitulo = '';
-    this.formDescripcion = '';
-    this.formCategoria = '';
-    this.formUrl = '';
+    this.api.saveDocument(payload).subscribe({
+      next: (resp: any) => {
+        console.log('Respuesta saveDocument', resp);
 
-    setTimeout(() => (this.registroMsg = ''), 3000);
+        if (resp.ok) {
+          this.registroMsg = 'Documento guardado correctamente.';
+
+          // limpiar formulario
+          this.formCodigo = '';
+          this.formTitulo = '';
+          this.formDescripcion = '';
+          this.formCategoria = '';
+          this.formUrl = '';
+
+          // recargar todo desde la hoja
+          this.cargarDesdeBackend();
+        } else {
+          this.registroMsg = 'No se pudo guardar: ' + (resp.error || '');
+        }
+
+        setTimeout(() => (this.registroMsg = ''), 3000);
+      },
+      error: (err) => {
+        console.error('Error al guardar en el servidor', err);
+        this.registroMsg = 'Error al guardar en el servidor.';
+        setTimeout(() => (this.registroMsg = ''), 4000);
+      },
+    });
   }
 
-  // ---------- ELIMINAR DOCUMENTO ----------
+  // ---------- CARGAR DESDE BACKEND (HOJA DE CÁLCULO) ----------
+  cargarDesdeBackend() {
+    this.tablaMsg = 'Cargando documentos desde el sistema...';
+
+    this.api.getDocuments().subscribe({
+      next: (docs: BackendDocument[]) => {
+        console.log('Docs desde backend:', docs);
+
+        const lista = docs || [];
+
+        this.documentos = lista.map((d, idx) => {
+          // Si el backend ya devuelve fileId, lo usamos; si no, lo intentamos extraer
+          const fileId = d.fileId || this.extraerFileId(d.enlace || '');
+
+          const urlPreview = fileId
+            ? `https://drive.google.com/file/d/${fileId}/preview`
+            : (d.enlace || '');
+
+          return {
+            id: idx + 1,
+            codigo: d.codigo || '',
+            titulo: d.titulo || '',
+            descripcion: d.descripcion || '',
+            categoria: d.categoria || '',
+            url: urlPreview,
+            fileId,
+          } as Documento;
+        });
+
+        if (this.documentos.length === 0) {
+          this.tablaMsg = 'No hay documentos registrados todavía.';
+        } else {
+          this.tablaMsg = '';
+        }
+
+        // Limpiar resultados de búsqueda y visor
+        this.resultadosTexto = [];
+        this.resultadosVoz = [];
+        this.selectedDocumentUrl = null;
+        this.selectedDocumentTitle = '';
+      },
+      error: (err) => {
+        console.error('Error al cargar documentos', err);
+        this.tablaMsg = 'Error al cargar documentos desde el sistema.';
+      },
+    });
+  }
+
+  // ---------- ELIMINAR DOCUMENTO (solo en memoria por ahora) ----------
   eliminarDocumento(id: number) {
     const docActual = this.documentos.find((d) => d.id === id);
     if (docActual && this.selectedDocumentTitle === (docActual.titulo || docActual.codigo)) {
@@ -156,13 +237,16 @@ export class App {
     }
 
     this.documentos = this.documentos.filter((d) => d.id !== id);
+
+    if (this.documentos.length === 0) {
+      this.tablaMsg = 'No hay documentos registrados todavía.';
+    }
   }
 
   // ---------- TABLA / VISOR ----------
   verDocumento(doc: Documento) {
     this.selectedDocumentTitle = doc.titulo || doc.codigo;
 
-    // Si hay fileId de Drive, usamos /preview
     let finalUrl = doc.url;
     if (doc.fileId) {
       finalUrl = `https://drive.google.com/file/d/${doc.fileId}/preview`;
